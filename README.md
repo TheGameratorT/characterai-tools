@@ -15,7 +15,7 @@ Install **Tampermonkey** **（[Chrome](https://www.tampermonkey.net/)** / **[Fir
 
 ### UserScript
 
-Click [here](https://raw.githubusercontent.com/TheGameratorT/characterai-tools/main/characterai-export.js) to install the script.
+Click [here](https://raw.githubusercontent.com/TheGameratorT/characterai-tools/main/characterai-export.user.js) to install the script.
 
 ## Installing the viewer
 
