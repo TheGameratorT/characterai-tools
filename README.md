@@ -23,8 +23,8 @@ Click [here](https://raw.githubusercontent.com/TheGameratorT/characterai-tools/m
 
 ## Previews
 
-Exporter:
+### Exporter
 ![Exporter](previews/exporter.png)
 
-Viewer:
+### Viewer
 ![Viewer](previews/viewer.png)
