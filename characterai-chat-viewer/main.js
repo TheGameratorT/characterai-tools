@@ -115,7 +115,7 @@ async function loadChatData(jsonData) {
 	const charDescElem = document.getElementById('chat-info-char-desc');
 	charDescElem.innerHTML = mdcvtr.makeHtml(charInfo.description);
 	const charDefnElem = document.getElementById('chat-info-char-defn');
-	charDefnElem.innerHTML = charInfo.definition.replace(NEWLINE_REGEX, '<br>');
+	charDefnElem.innerHTML = charInfo.definition ? charInfo.definition.replace(NEWLINE_REGEX, '<br>') : '<i>No description</i>';
 	
 	const catgList = charInfo.categories.split(';');
 	let catgHtml = '';

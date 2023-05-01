@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CharacterAI Exporter
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.0.1
 // @description  A script to export a conversation from CharacterAI
 // @author       TheGameratorT
 // @match        https://beta.character.ai/*
@@ -95,7 +95,38 @@
 			alert('Failed to fetch character info, you might be on a waiting queue, reload the page and try again.');
 			return;
 		}
-		const charInfo = await charInfoResp.json();
+		let charInfo = await charInfoResp.json();
+
+        if (charInfo.character.length == 0) {
+            // no character perms, use info-cache instead
+            const charCacheInfoResp = await fetch(`chat/character/info-cached/${charId}/`, {
+                headers: {
+                    'authorization': auth,
+                    'accept': 'application/json, text/plain, */*',
+                    'content-type': 'application/json'
+                }
+            });
+            if (!getIsJsonContent(charCacheInfoResp)) {
+                alert('Failed to fetch character info, you might be on a waiting queue, reload the page and try again.');
+                return;
+            }
+            const charCacheInfo = await charCacheInfoResp.json();
+
+            const catgInfoResp = await fetch('chat/character/categories/', {
+                headers: {
+                    'authorization': auth,
+                    'accept': 'application/json, text/plain, */*',
+                    'content-type': 'application/json'
+                }
+            });
+            if (!getIsJsonContent(catgInfoResp)) {
+                alert('Failed to fetch character info, you might be on a waiting queue, reload the page and try again.');
+                return;
+            }
+            const catgInfo = await catgInfoResp.json();
+
+            charInfo = { character: {...charCacheInfo.character, categories: catgInfo.categories} };
+        }
 
 		// Fetch messages
 		const scrollBar = document.getElementById('scrollBar');
