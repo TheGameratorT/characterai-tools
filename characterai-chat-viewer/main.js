@@ -4,6 +4,8 @@ let indexPage, chatPage;
 let userAvatar, charAvatar;
 let floatMenu, floatMenuHint, inFloatMenu;
 let infoModal;
+let infoPersonas;
+let loadedAvatars = [];
 let mdcvtr; // markdown converter
 
 function main() {
@@ -13,6 +15,7 @@ function main() {
 	floatMenuHint = document.getElementById('chat-floatmenu-hint');
 	inFloatMenu = false;
 	infoModal = document.getElementById('chat-info-modal');
+	infoPersonas = document.getElementById('chat-info-personas-block');
 	mdcvtr = new showdown.Converter();
 }
 
@@ -57,9 +60,31 @@ function dropClick() {
 }
 
 async function loadAvatar(avatarUrl) {
-	let request = await fetch(avatarUrl);
-	let blob = await request.blob();
-	return URL.createObjectURL(blob);
+	try {
+		let request = await fetch(avatarUrl);
+		let blob = await request.blob();
+		let avatar = URL.createObjectURL(blob);
+		loadedAvatars.push(avatar);
+		return avatar;
+	} catch (error) {
+		console.log("Error loading avatar.");
+	}
+	return "images/no_image.png";
+}
+
+async function loadPersonas(jsonPersonas) {
+	let personas = [];
+	if (jsonPersonas) {
+		for (let i = 0; i < jsonPersonas.length; i++) {
+			let jsonPersona = jsonPersonas[i];
+			personas.push({
+				name: jsonPersona.name,
+				description: jsonPersona.description,
+				avatar: jsonPersona.avatar ? await loadAvatar(jsonPersona.avatar) : userAvatar
+			});
+		}
+	}
+	return personas;
 }
 
 async function loadChatData(jsonData) {
@@ -68,6 +93,28 @@ async function loadChatData(jsonData) {
 
 	userAvatar = await loadAvatar(userInfo.avatar);
 	charAvatar = await loadAvatar(charInfo.avatar);
+
+	const personas = await loadPersonas(jsonData.personas);
+
+	const getAvatarForCharacterId = (id)=>{
+		if (id == 0) { return userAvatar; }
+		if (id == 1) { return charAvatar; }
+		const personaId = id - 2;
+		if (personaId < personas.length) {
+			return personas[personaId].avatar;
+		}
+		return "images/no_image.png";
+	};
+
+	const getTitleForCharacterId = (id)=>{
+		if (id == 0) { return userInfo.name; }
+		if (id == 1) { return charInfo.name; }
+		const personaId = id - 2;
+		if (personaId < personas.length) {
+			return personas[personaId].name;
+		}
+		return "&ltmissing&gt";
+	};
 
 	const msgs = jsonData.messages;
 	let msgsHtml = '';
@@ -80,10 +127,10 @@ async function loadChatData(jsonData) {
 `<div class="message-row" ${i==0 ? '' : ' style="margin-top: 16px"'}>
 	<div class="inner">
 		<div class="avatar">
-			<img src="${msg[0] ? charAvatar : userAvatar}">
+			<img src="${getAvatarForCharacterId(msg[0])}">
 		</div>
 		<div class="title">
-			<b>${msg[0] ? charInfo.name : userInfo.name}</b>
+			<b>${getTitleForCharacterId(msg[0])}</b>
 		</div>
 		<div class="body">
 			${msgTxtHtml}
@@ -106,24 +153,55 @@ async function loadChatData(jsonData) {
 	const charAvatarElem = document.getElementById('chat-info-char-avatar');
 	charAvatarElem.src = charAvatar;
 	const charNameElem = document.getElementById('chat-info-char-name');
-	charNameElem.innerHTML =
-`<p><b>Name</b><br>${charInfo.name}</p>
-<p><b>Title</b><br>${charInfo.title}</p>`;
+	charNameElem.innerHTML = charInfo.title ? `<p><b>Name</b><br>${charInfo.name}</p><p><b>Title</b><br>${charInfo.title}</p>` : charInfo.name;
 
-	const charGreetElem = document.getElementById('chat-info-char-greet');
-	charGreetElem.innerHTML = mdcvtr.makeHtml(charInfo.greeting);
-	const charDescElem = document.getElementById('chat-info-char-desc');
-	charDescElem.innerHTML = mdcvtr.makeHtml(charInfo.description);
-	const charDefnElem = document.getElementById('chat-info-char-defn');
-	charDefnElem.innerHTML = charInfo.definition ? charInfo.definition.replace(NEWLINE_REGEX, '<br>') : '<i>No description</i>';
-	
-	const catgList = charInfo.categories.split(';');
-	let catgHtml = '';
-	for (let i = 0; i < catgList.length; i++) {
-		catgHtml += `<div class="chat-info-tag"${i == (catgList.length - 1) ? '' : 'style="margin-right: 16px"'}>${catgList[i]}</div>`;
+	let setCharInfoBlock = (blockName, value, provider)=>{
+		const block = document.getElementById(`chat-info-char-${blockName}-block`);
+		const elem = document.getElementById(`chat-info-char-${blockName}`);
+		if (value) {
+			provider(elem, value);
+			block.style.display = "block";
+		} else {
+			block.style.display = "none";
+		}
+	};
+
+	setCharInfoBlock('greet', charInfo.greeting, (e,v)=>{ e.innerHTML = mdcvtr.makeHtml(v); });
+	setCharInfoBlock('desc', charInfo.description, (e,v)=>{ e.innerHTML = mdcvtr.makeHtml(v); });
+	setCharInfoBlock('defn', charInfo.definition, (e,v)=>{ e.innerHTML = v.replace(NEWLINE_REGEX, '<br>'); });
+	setCharInfoBlock('catg', charInfo.categories, (e,v)=>{
+		const catgList = v.split(';');
+		let catgHtml = '';
+		for (let i = 0; i < catgList.length; i++) {
+			catgHtml += `<div class="chat-info-tag"${i == (catgList.length - 1) ? '' : 'style="margin-right: 16px"'}>${catgList[i]}</div>`;
+		}
+		e.innerHTML = catgHtml;
+	});
+
+	const floatMenuDesc = document.getElementById('chat-floatmenu-desc');
+	floatMenuDesc.innerHTML = `Chat with ${charInfo.name}`;
+
+	infoPersonas.style.display = personas.length > 0 ? 'block' : 'none';
+
+	const personasListElem = document.getElementById('chat-info-personas-list');
+	let personasHtml = '';
+
+	for (let i = 0; i < personas.length; i++) {
+		const persona = personas[i];
+
+		personasHtml += 
+`<div class="chat-info-char-block">
+<div style="padding: 8px">
+	<img class="chat-info-persona-avatar" src="${persona.avatar}">
+	<div class="chat-info-persona-name">${persona.name}</div>`;
+		if (persona.description) {
+			personasHtml += `<div class="chat-info-persona-desc">${persona.description}</div>`;
+		}
+`</div>
+</div>`;
 	}
-	const charCatgElem = document.getElementById('chat-info-char-catg');
-	charCatgElem.innerHTML = catgHtml;
+
+	personasListElem.innerHTML = personasHtml;
 	
 	indexPage.setAttribute('hidden', '');
 	chatPage.removeAttribute('hidden');
@@ -144,6 +222,10 @@ function onFloatMenuLeave() {
 function exitChat() {
 	indexPage.removeAttribute('hidden');
 	chatPage.setAttribute('hidden', '');
+
+	for (let i = 0; i < loadedAvatars.length; i++) {
+		URL.revokeObjectURL(loadedAvatars[i]);
+	}
 }
 
 function showChatInfo() {

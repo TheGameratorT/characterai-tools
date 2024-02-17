@@ -7,7 +7,7 @@ html {
 
 body {
 	color: rgba(229, 224, 216, 0.85);
-	background-color: rgb(36, 37, 37);
+	background-color: rgb(32, 33, 33);
 	font-family: Noto Sans;
 	height: 100%;
 	margin: 0 0;
@@ -48,7 +48,10 @@ body {
 }
 
 #chat-scroll-container {
-	background-color: rgb(42, 43, 43);
+	background-color: rgb(36, 37, 37);
+	border: 2px solid rgb(46, 47, 47);
+	border-top: none;
+	border-bottom: none;
 	width: 80%;
 	height: 100%;
 	overflow-y: auto;
@@ -65,17 +68,16 @@ body {
 		'avatar title'
 		'avatar body';
 	grid-template-columns: auto 1fr;
-	background-color: rgb(52, 53, 53);
+	background-color: rgb(42, 43, 43);
+	border: 2px solid rgb(56, 57, 57);
 	border-radius: 8px;
 	padding: 12px;
 }
 
 .message-row .avatar {
 	grid-area: avatar;
-	max-width: 64px;
-	max-height: 64px;
-	width: auto;
-	height: auto;
+	width: 64px;
+	height: 64px;
 	margin-right: 12px;
 }
 
@@ -86,6 +88,7 @@ body {
 	transform: translate(-50%, -50%);
 	max-width: 100%;
 	max-height: 100%;
+	border-radius: 4px;
 }
 
 .message-row .title {
@@ -110,8 +113,8 @@ body {
 
 #chat-floatmenu {
 	position: absolute;
-	background-color: rgb(52, 53, 53);
-	border: 3px solid rgb(42, 43, 43);
+	background-color: rgb(42, 43, 43);
+	border: 3px solid rgb(56, 57, 57);
 	border-left: none;
 	border-radius: 0px 4px 4px 0px;
 	width: 400px;
@@ -163,7 +166,9 @@ body {
 
 #chat-floatmenu-hint {
 	position: absolute;
-	background-color: rgb(52, 53, 53);
+	background-color: rgb(42, 43, 43);
+	border: 3px solid rgb(56, 57, 57);
+	border-left: none;
 	border-radius: 0px 4px 4px 0px;
 	width: 20px;
 	height: 100px;
@@ -227,10 +232,9 @@ body {
 
 #chat-info-user-avatar {
 	vertical-align: middle;
-	max-width: 64px;
-	max-height: 64px;
-	width: auto;
-	height: auto;
+	width: 96px;
+	height: 96px;
+	object-fit: contain;
 }
 
 #chat-info-user-name {
@@ -240,10 +244,9 @@ body {
 
 #chat-info-char-avatar {
 	vertical-align: middle;
-	max-width: 96px;
-	max-height: 96px;
-	width: auto;
-	height: auto;
+	width: 96px;
+	height: 96px;
+	object-fit: contain;
 }
 
 #chat-info-char-name {
@@ -276,4 +279,20 @@ body {
 	display: inline-block;
 	background-color: rgb(56, 57, 57);
 	padding: 4px;
+}
+
+.chat-info-persona-avatar {
+	vertical-align: middle;
+	width: 96px;
+	height: 96px;
+	object-fit: contain;
+}
+
+.chat-info-persona-name {
+	display: inline;
+	margin-left: 8px;
+}
+
+.chat-info-persona-desc {
+	margin-top: 8px;
 }
